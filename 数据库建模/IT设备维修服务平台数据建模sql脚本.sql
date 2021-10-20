@@ -1,14 +1,12 @@
 /*==============================================================*/
 /* DBMS name:      MySQL 5.0                                    */
-/* Created on:     2021/10/20 18:35:05                          */
+/* Created on:     2021/10/20 23:20:48                          */
 /*==============================================================*/
 
 
 drop table if exists comment;
 
 drop table if exists fault_type;
-
-drop table if exists member;
 
 drop table if exists notice;
 
@@ -60,28 +58,17 @@ create table fault_type
 );
 
 /*==============================================================*/
-/* Table: member                                                */
-/*==============================================================*/
-create table member
-(
-   member_id            int(11) not null,
-   version              varchar(3),
-   create_time          datetime,
-   modified_time        datetime,
-   primary key (member_id)
-);
-
-/*==============================================================*/
 /* Table: notice                                                */
 /*==============================================================*/
 create table notice
 (
    notice_id            int not null auto_increment,
-   use_id               int(11),
+   user_id              int(11),
    notice_titile        varchar(50),
    notice_content       varchar(100),
    notice_image         binary(255),
    notice_time          datetime,
+   create_people        varchar(10),
    version              varchar(3),
    create_time          datetime,
    modified_time        datetime,
@@ -93,8 +80,8 @@ create table notice
 /*==============================================================*/
 create table operate_log
 (
-   id                   int not null,
-   use_id               int(11),
+   id                   int not null auto_increment,
+   user_id              int(11),
    ip                   varchar(20),
    action               longtext,
    version              varchar(3),
@@ -109,7 +96,7 @@ create table operate_log
 create table order_form
 (
    id                   int(12) not null auto_increment,
-   use_id               int(11),
+   user_id              int(11),
    fault_id             int,
    address              varchar(100),
    fault_expresstion    varchar(200),
@@ -121,7 +108,7 @@ create table order_form
    is_receive           boolean,
    receive_time         datetime,
    actual_money         int(10),
-   status               varchar(3),
+   order_status         varchar(3),
    reviewer             varchar(5),
    review_time          varchar(8),
    reason               varchar(100),
@@ -136,7 +123,7 @@ create table order_form
 /*==============================================================*/
 create table privilege
 (
-   pri_id               int not null,
+   pri_id               int not null auto_increment,
    pri_name             varchar(20),
    primary key (pri_id)
 );
@@ -147,13 +134,13 @@ create table privilege
 create table product
 (
    id                   int not null auto_increment,
-   use_id               int(11),
+   user_id              int(11),
    protype_id           int,
    product_id           int(12),
-   product_name         varchar(20),
+   product_name         varchar(10),
    inventory            int,
    unit                 varchar(5),
-   单价                   int(7),
+   price                int(7),
    version              varchar(3),
    create_time          datetime,
    modified_time        datetime,
@@ -165,7 +152,7 @@ create table product
 /*==============================================================*/
 create table product_type
 (
-   protype_id           int not null,
+   protype_id           int not null auto_increment,
    protype_name         varchar(20),
    version              varchar(3),
    create_time          datetime,
@@ -188,23 +175,15 @@ create table relation
 /*==============================================================*/
 create table repair_form
 (
-   维修单id                int(12) not null,
+   id                   int not null,
    repairment_id        int(11),
-   fault_id             int,
+   ord_id               int(12),
    address              varchar(100),
-   fault_expresstion    varbinary(200),
-   reserve_time         datetime,
-   deal_money           int(10),
-   contact_name         varchar(10),
-   contact_phone        int(11),
-   order_time           datetime,
-   receive_time         datetime,
-   actual_money         int(10),
    repair_status        varchar(3),
    version              varchar(3),
    create_time          datetime,
    modified_time        datetime,
-   primary key (维修单id)
+   primary key (id)
 );
 
 /*==============================================================*/
@@ -215,10 +194,7 @@ create table repairment
    repairment_id        int(11) not null,
    name                 varchar(10),
    repair_phone         int(11),
-   repair_type          varchar(50),
-   version              varchar(3),
-   create_time          datetime,
-   modified_time        datetime,
+   repair_type          varchar(100),
    primary key (repairment_id)
 );
 
@@ -227,22 +203,15 @@ create table repairment
 /*==============================================================*/
 create table report_form
 (
-   报修单id                int(12) not null,
+   id                   int not null,
    com_id               int,
-   member_id            int(11),
-   fault_id             int,
-   address              varchar(100),
-   fault_expresstion    varchar(200),
-   reserve_time         datetime,
-   deal_money           int(10),
-   contact_name         varchar(10),
-   contact_phone        int(11),
-   order_time           datetime,
-   repair_status        varchar(3),
+   user_id              int(11),
+   ord_id               int(12),
+   report_status        varchar(3),
    version              varchar(3),
    create_time          datetime,
    modified_time        datetime,
-   primary key (报修单id)
+   primary key (id)
 );
 
 /*==============================================================*/
@@ -252,6 +221,7 @@ create table role
 (
    id                   int not null auto_increment,
    role_name            varchar(5) not null,
+   create_people        varchar(10),
    version              varchar(3),
    create_time          datetime,
    modified_time        datetime,
@@ -263,39 +233,37 @@ create table role
 /*==============================================================*/
 create table user
 (
-   use_id               int(11) not null,
+   user_id              int(11) not null,
    rol_id               int,
    name                 varchar(10) not null,
    password             varchar(20) not null,
    image                binary(255),
    sex                  int,
-   status               boolean not null,
+   user_status          boolean not null,
+   create_people        varchar(10),
    version              varchar(3),
    create_time          datetime,
    modified_time        datetime,
-   primary key (use_id)
+   primary key (user_id)
 );
 
-alter table member add constraint FK_user_member foreign key (member_id)
-      references user (use_id) on delete set null on update cascade;
+alter table notice add constraint FK_user_notice foreign key (user_id)
+      references user (user_id) on delete set null on update cascade;
 
-alter table notice add constraint FK_user_notice foreign key (use_id)
-      references user (use_id) on delete set null on update cascade;
-
-alter table operate_log add constraint FK_user_operate foreign key (use_id)
-      references user (use_id) on delete set null on update cascade;
+alter table operate_log add constraint FK_user_operate foreign key (user_id)
+      references user (user_id) on delete set null on update cascade;
 
 alter table order_form add constraint FK_order_fault foreign key (fault_id)
       references fault_type (fault_id) on delete set null on update cascade;
 
-alter table order_form add constraint FK_user_order foreign key (use_id)
-      references user (use_id) on delete set null on update cascade;
+alter table order_form add constraint FK_user_order foreign key (user_id)
+      references user (user_id) on delete set null on update cascade;
 
 alter table product add constraint FK_protype_product foreign key (protype_id)
       references product_type (protype_id) on delete set null on update cascade;
 
-alter table product add constraint FK_user_product foreign key (use_id)
-      references user (use_id) on delete set null on update cascade;
+alter table product add constraint FK_user_product foreign key (user_id)
+      references user (user_id) on delete set null on update cascade;
 
 alter table relation add constraint FK_Reference_15 foreign key (id)
       references role (id) on delete restrict on update restrict;
@@ -303,23 +271,23 @@ alter table relation add constraint FK_Reference_15 foreign key (id)
 alter table relation add constraint FK_Reference_16 foreign key (pri_id)
       references privilege (pri_id) on delete restrict on update restrict;
 
-alter table repair_form add constraint FK_fault_repair foreign key (fault_id)
-      references fault_type (fault_id) on delete set null on update cascade;
+alter table repair_form add constraint FK_order_repair foreign key (ord_id)
+      references order_form (id) on delete cascade on update cascade;
 
 alter table repair_form add constraint FK_repairment_repair foreign key (repairment_id)
       references repairment (repairment_id) on delete set null on update cascade;
 
 alter table repairment add constraint FK_user_repairment foreign key (repairment_id)
-      references user (use_id) on delete set null on update cascade;
+      references user (user_id) on delete set null on update cascade;
 
-alter table report_form add constraint FK_fault_report foreign key (fault_id)
-      references fault_type (fault_id) on delete set null on update cascade;
-
-alter table report_form add constraint FK_member_report foreign key (member_id)
-      references member (member_id) on delete set null on update cascade;
+alter table report_form add constraint FK_order_report foreign key (ord_id)
+      references order_form (id) on delete cascade on update cascade;
 
 alter table report_form add constraint FK_report_comment foreign key (com_id)
       references comment (comment_id) on delete set null on update cascade;
+
+alter table report_form add constraint FK_user_report foreign key (user_id)
+      references user (user_id) on delete set null on update cascade;
 
 alter table user add constraint FK_role_user foreign key (rol_id)
       references role (id) on delete set null on update cascade;
